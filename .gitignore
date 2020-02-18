@@ -130,6 +130,11 @@ x509.genkey
 # Kconfig presets
 all.config
 
+#
+#Ignoring Android.bp link file
+#
+Android.bp
+
 # Kdevelop4
 *.kdev4
 
