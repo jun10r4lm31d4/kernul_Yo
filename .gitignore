@@ -141,6 +141,9 @@ Android.bp
 # fetched Android config fragments
 kernel/configs/android-*.cfg
 
+# Anykernel
+anykernel.sh
+
 # Build script
 build.sh
 
