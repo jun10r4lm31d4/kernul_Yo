@@ -144,6 +144,9 @@ kernel/configs/android-*.cfg
 # Build script
 build.sh
 
+# Regen script
+regen.sh
+
 # Output dir
 out
 
