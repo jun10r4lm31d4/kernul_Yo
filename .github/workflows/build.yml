@@ -17,7 +17,7 @@ jobs:
       CCACHE_MAXSIZE: "2G"
       CCACHE_HARDLINK: "true"
       KERNEL_DEFCONFIG: "ghost_defconfig"
-      KERNEL_CMDLINE: "ARCH=arm64 CLANG_TRIPLE=aarch64-linux-gnu- CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_ARM32=arm-linux-gnueabi- O=out"
+      KERNEL_CMDLINE: "ARCH=arm64 CLANG_TRIPLE=aarch64-linux-gnu- CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_ARM32=arm-linux-gnueabi- LD=ld.lld LLVM=1 LLVM_IAS=1 O=out"
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -31,10 +31,8 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update -y 
-        sudo apt install gcc-aarch64-linux-gnu -y
-        sudo apt install gcc-arm-linux-gnueabi -y
         sudo apt install binutils make python3 libssl-dev build-essential bc  bison flex unzip libssl-dev ca-certificates xz-utils mkbootimg cpio device-tree-compiler git git-lfs -y
-        git clone https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86 --dept=1 -b master aosp_clang
+        git clone https://gitlab.com/PixelOS-Devices/playgroundtc --dept=1 -b 17 clang
         git clone https://github.com/lateautumn233/AnyKernel3 -b master --depth=1
         rm -rf AnyKernel3/.git
     
@@ -46,7 +44,7 @@ jobs:
     - name: Build Kernel-SU
       run: |
         curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
-        export PATH=$(pwd)/aosp_clang/clang-r487747/bin/:$PATH
+        export PATH=$(pwd)/clang/bin/:$(pwd)/clang/aarch64-linux-gnu/bin:$(pwd)/clang/arm-linux-gnueabi/bin:$PATH
         make $KERNEL_CMDLINE $KERNEL_DEFCONFIG CC="ccache clang"
         make $KERNEL_CMDLINE CC="ccache clang" -j$(nproc --all)
         cp out/arch/arm64/boot/Image.gz AnyKernel3
