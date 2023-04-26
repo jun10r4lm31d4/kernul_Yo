@@ -17,7 +17,7 @@ jobs:
       CCACHE_MAXSIZE: "2G"
       CCACHE_HARDLINK: "true"
       KERNEL_DEFCONFIG: "ghost_defconfig"
-      KERNEL_CMDLINE: "ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_ARM32=arm-linux-gnueabi- LLVM=1 LLVM_IAS=1 O=out"
+      KERNEL_CMDLINE: "ARCH=arm64 CLANG_TRIPLE=aarch64-linux-gnu- CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_ARM32=arm-linux-gnueabi- O=out"
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -34,8 +34,8 @@ jobs:
         sudo apt install gcc-aarch64-linux-gnu -y
         sudo apt install gcc-arm-linux-gnueabi -y
         sudo apt install binutils make python3 libssl-dev build-essential bc  bison flex unzip libssl-dev ca-certificates xz-utils mkbootimg cpio device-tree-compiler git git-lfs -y
-        git clone https://codeberg.org/Mandi-Sa/clang --dept=1 -b amd64-kernel-arm
-        git clone https://github.com/lateautumn233/AnyKernel3 -b master --depth=1
+        git clone https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86 --dept=1 -b master aosp_clang
+        git clone https://github.com/osm0sis/AnyKernel3 -b master --depth=1
         rm -rf AnyKernel3/.git
     
     - name: GetTime
@@ -43,25 +43,10 @@ jobs:
       run: |
         echo "TIME=$(TZ=UTC-8 date +%m%d%H%M )" >> $GITHUB_OUTPUT
 
-    - name: Build Kernel
-      run: |
-       export PATH=$(pwd)/clang/bin/:$PATH
-       export ARCH=arm64
-       export SUBARCH=arm64
-       make $KERNEL_CMDLINE $KERNEL_DEFCONFIG CC="ccache clang"
-       make $KERNEL_CMDLINE CC="ccache clang" -j$(nproc --all)
-       cp out/arch/arm64/boot/Image.gz AnyKernel3
-
-    - name: Upload Kernel
-      uses: actions/upload-artifact@v3
-      with:
-        name: G.H.O.S.T-kernel-${{ steps.get_time.outputs.TIME }}
-        path: "AnyKernel3/*"
-
     - name: Build Kernel-SU
       run: |
         curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
-        export PATH=$(pwd)/clang/bin/:$PATH
+        export PATH=$(pwd)/aosp_clang/clang-r487747/bin/:$PATH
         make $KERNEL_CMDLINE $KERNEL_DEFCONFIG CC="ccache clang"
         make $KERNEL_CMDLINE CC="ccache clang" -j$(nproc --all)
         cp out/arch/arm64/boot/Image.gz AnyKernel3
